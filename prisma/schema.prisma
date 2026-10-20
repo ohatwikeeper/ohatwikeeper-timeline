@@ -1,0 +1,204 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model analytics {
+  id                  BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  timestamp           DateTime? @default(now()) @db.DateTime(0)
+  ip_address          String?   @db.VarChar(45)
+  user_agent          String?   @db.Text
+  request_uri         String?   @db.Text
+  referrer            String?   @db.Text
+  page_type           String?   @db.VarChar(255)
+  logged_in_user_id   Int?      @db.UnsignedInt
+  accessed_identifier String?   @db.VarChar(255)
+}
+
+model analytics_cache {
+  id         Int       @id @default(autoincrement())
+  report_key String    @unique(map: "report_key") @db.VarChar(50)
+  data       String    @db.LongText
+  updated_at DateTime? @default(now()) @db.DateTime(0)
+}
+
+model cross_domain_tokens {
+  id         Int       @id @default(autoincrement())
+  token      String    @unique(map: "token") @db.VarChar(64)
+  user_id    Int
+  expires_at DateTime  @db.DateTime(0)
+  created_at DateTime? @default(now()) @db.DateTime(0)
+
+  @@index([expires_at], map: "idx_expires")
+  @@index([token], map: "idx_token")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model error_logs {
+  id         Int      @id @default(autoincrement())
+  error_id   String   @unique(map: "error_id") @db.VarChar(255)
+  error_code Int?
+  details    String?  @db.LongText
+  created_at DateTime @default(now()) @db.Timestamp(0)
+}
+
+model mail_templates {
+  id            Int      @id @default(autoincrement())
+  template_name String   @unique(map: "template_name") @db.VarChar(50)
+  subject       String   @db.VarChar(255)
+  body          String   @db.Text
+  description   String?  @db.Text
+  updated_at    DateTime @default(now()) @db.Timestamp(0)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model patchnote {
+  id           Int      @id @default(autoincrement())
+  release_date DateTime @db.DateTime(0)
+  version      String?  @db.VarChar(255)
+  title        String   @db.VarChar(255)
+  changes      String   @db.LongText
+  created_at   DateTime @default(now()) @db.Timestamp(0)
+}
+
+model profilecard {
+  id                   Int      @id @default(autoincrement())
+  user_id              Int      @unique(map: "user_idx")
+  display_name         String?  @db.VarChar(100)
+  vrchat_name          String?  @db.VarChar(100)
+  tagline              String?  @db.VarChar(200)
+  bio                  String?  @db.Text
+  main_image           String?  @db.VarChar(500)
+  sub_images           String?  @db.Text
+  x_username           String?  @db.VarChar(100)
+  vrchat_id            String?  @db.VarChar(100)
+  discord_username     String?  @db.VarChar(100)
+  social_links         String?  @db.Text
+  languages            String?  @db.Text
+  badges               String?  @db.Text
+  play_styles          String?  @db.Text
+  play_style           String?  @default("VRChatter") @db.VarChar(50)
+  trust_rank           String?  @db.VarChar(50)
+  age_category         String?  @db.VarChar(50)
+  device_type          String?  @db.VarChar(50)
+  vr_start_date        String?  @db.VarChar(50)
+  active_hours_weekday String?  @db.Text
+  active_hours_weekend String?  @db.Text
+  status_messages      String?  @db.Text
+  likes_dislikes       String?  @db.Text
+  tags                 String?  @db.Text
+  background_type      String?  @default("gradient") @db.VarChar(50)
+  background_value     String?  @default("pastel-dream") @db.VarChar(200)
+  font_family          String?  @default("Noto Sans JP") @db.VarChar(100)
+  accent_color         String?  @default("#38bdf8") @db.VarChar(20)
+  card_style           String?  @default("glass") @db.VarChar(50)
+  show_date            Boolean? @default(true)
+  is_public            Boolean? @default(true)
+  updated_at           DateTime @default(now()) @db.Timestamp(0)
+  display_mode         String?  @default("card") @db.VarChar(20)
+  background_custom    String?  @db.Text
+  users                users    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_profilecard_user")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model questionnaire_whatisyourfavoriteworld {
+  id                Int      @id @default(autoincrement())
+  user_id           Int      @unique(map: "user_id")
+  do_not_show_again Boolean  @default(false)
+  is_answered       Boolean  @default(false)
+  answers           String?  @db.LongText
+  created_at        DateTime @default(now()) @db.DateTime(0)
+  updated_at        DateTime @default(now()) @db.DateTime(0)
+  users             users    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_questionnaire_user")
+}
+
+model records {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  uniqid     String   @unique(map: "uniqid") @db.VarChar(255)
+  history_id String?  @unique(map: "history_id") @db.VarChar(10)
+  url        String   @db.VarChar(255)
+  text       String?  @db.Text
+  date       DateTime @db.DateTime(0)
+  likes      Int?     @default(0)
+  reposts    Int?     @default(0)
+  replies    Int?     @default(0)
+  views      Int?     @default(0)
+  image_url  String?  @db.VarChar(255)
+  author     String?  @db.Text
+  source     String   @default("web") @db.VarChar(20)
+  users      users    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "records_ibfk_1")
+
+  @@index([user_id], map: "user_id")
+}
+
+model settings {
+  setting_key   String   @id @db.VarChar(255)
+  setting_value String?  @db.Text
+  updated_at    DateTime @default(now()) @db.Timestamp(0)
+}
+
+model system_settings {
+  key        String    @id @db.VarChar(255)
+  value      String?   @db.Text
+  updated_at DateTime? @default(now()) @db.DateTime(0)
+}
+
+model timeline_analytics {
+  id               Int      @id @default(autoincrement())
+  access_date      DateTime @db.Date
+  access_timestamp DateTime @default(now()) @db.DateTime(0)
+  ip_address_hash  String   @db.VarChar(255)
+  user_agent       String?  @db.Text
+  referrer         String?  @db.Text
+
+  @@index([access_date], map: "access_date")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model user_page_view_logs {
+  id             Int      @id @default(autoincrement())
+  user_id        Int
+  viewer_user_id Int?
+  ip_address     String?  @db.VarChar(45)
+  user_agent     String?  @db.Text
+  referrer       String?  @db.VarChar(500)
+  viewed_at      DateTime @default(now()) @db.DateTime(0)
+  created_at     DateTime @default(now()) @db.DateTime(0)
+
+  @@index([ip_address], map: "idx_ip_address")
+  @@index([user_id], map: "idx_user_id")
+  @@index([user_id, viewed_at], map: "idx_user_viewed")
+  @@index([viewed_at], map: "idx_viewed_at")
+  @@index([viewer_user_id], map: "idx_viewer_user_id")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model users {
+  id                                    Int                                    @id @default(autoincrement())
+  discord_id                            String?                                @unique(map: "discord_id") @db.VarChar(255)
+  discord_username                      String?                                @default("") @db.VarChar(255)
+  public_uuid                           String                                 @unique(map: "public_uuid") @db.VarChar(255)
+  locked_author_id                      String?                                @db.VarChar(255)
+  is_public                             Boolean                                @default(true)
+  x_id                                  String?                                @unique(map: "x_id") @db.VarChar(255)
+  x_username                            String?                                @db.VarChar(255)
+  followers_count                       Int?
+  following_count                       Int?
+  x_oauth_token                         String?                                @db.VarChar(255)
+  x_oauth_token_secret                  String?                                @db.VarChar(255)
+  primary_email                         String?                                @db.VarChar(255)
+  api_key                               String?                                @unique(map: "api_key") @db.VarChar(64)
+  x_access_token                        String?                                @db.VarChar(255)
+  x_refresh_token                       String?                                @db.VarChar(255)
+  created_at                            DateTime                               @db.DateTime(0)
+  records_updated_at                    DateTime?                              @db.DateTime(0)
+  xfollow_status                        Boolean                                @default(false)
+  x_icon                                String?                                @db.VarChar(500)
+  profilecard                           profilecard?
+  questionnaire_whatisyourfavoriteworld questionnaire_whatisyourfavoriteworld?
+  records                               records[]
+}
