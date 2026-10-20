@@ -12,7 +12,6 @@ const adapter = new PrismaMariaDb({
   password: decodeURIComponent(url.password),
   database: url.pathname.slice(1),
   connectionLimit: 5,
-  minimumIdle: 0,
   idleTimeout: 30,
   connectTimeout: 5000,
   acquireTimeout: 15000,
